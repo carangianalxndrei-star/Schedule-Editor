@@ -339,7 +339,7 @@
     <div class="titlebar">
       <div class="nav-btn">‹</div>
       <div class="nav-btn">›</div>
-      <div class="titlebar-label" contenteditable="true" spellcheck="false">MY SCHEDULE</div>
+      <div class="titlebar-label" id="title-label" contenteditable="true" spellcheck="false">MY SCHEDULE</div>
       <div class="win-controls">
         <span id="edit-toggle" class="active" title="Show/hide edit controls">✎</span>
         <span>▢</span>
@@ -355,7 +355,37 @@
 <button class="reopen-btn" id="reopen-btn">↺ REOPEN SCHEDULE</button>
 
 <script>
+const STORAGE_KEY = 'pixel_schedule_widget_v1';
+
 let schedule = [];
+
+const titleLabel = document.getElementById('title-label');
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (Array.isArray(data.schedule)) schedule = data.schedule;
+      if (typeof data.title === 'string') titleLabel.textContent = data.title;
+    }
+  } catch (e) {
+    console.error('Could not load saved schedule:', e);
+  }
+}
+
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      title: titleLabel.textContent,
+      schedule: schedule
+    }));
+  } catch (e) {
+    console.error('Could not save schedule:', e);
+  }
+}
+
+loadData();
 
 const container = document.getElementById('schedule-body');
 
@@ -373,7 +403,7 @@ function render() {
     daySpan.contentEditable = 'true';
     daySpan.spellcheck = false;
     daySpan.textContent = dayData.day;
-    daySpan.addEventListener('input', () => dayData.day = daySpan.textContent);
+    daySpan.addEventListener('input', () => { dayData.day = daySpan.textContent; saveData(); });
 
     const removeDay = document.createElement('div');
     removeDay.className = 'day-remove';
@@ -381,6 +411,7 @@ function render() {
     removeDay.title = 'Remove day';
     removeDay.addEventListener('click', () => {
       schedule.splice(dIdx, 1);
+      saveData();
       render();
     });
 
@@ -399,7 +430,7 @@ function render() {
       nameSpan.contentEditable = 'true';
       nameSpan.spellcheck = false;
       nameSpan.textContent = c.name;
-      nameSpan.addEventListener('input', () => c.name = nameSpan.textContent);
+      nameSpan.addEventListener('input', () => { c.name = nameSpan.textContent; saveData(); });
 
       const timeRoom = document.createElement('span');
       timeRoom.className = 'time-room';
@@ -409,14 +440,14 @@ function render() {
       timeSpan.contentEditable = 'true';
       timeSpan.spellcheck = false;
       timeSpan.textContent = c.time;
-      timeSpan.addEventListener('input', () => c.time = timeSpan.textContent);
+      timeSpan.addEventListener('input', () => { c.time = timeSpan.textContent; saveData(); });
 
       const roomSpan = document.createElement('span');
       roomSpan.className = 'room';
       roomSpan.contentEditable = 'true';
       roomSpan.spellcheck = false;
       roomSpan.textContent = c.room;
-      roomSpan.addEventListener('input', () => c.room = roomSpan.textContent);
+      roomSpan.addEventListener('input', () => { c.room = roomSpan.textContent; saveData(); });
 
       timeRoom.appendChild(timeSpan);
       timeRoom.appendChild(roomSpan);
@@ -427,6 +458,7 @@ function render() {
       removeLine.title = 'Remove class';
       removeLine.addEventListener('click', () => {
         dayData.classes.splice(cIdx, 1);
+        saveData();
         render();
       });
 
@@ -441,6 +473,7 @@ function render() {
     addClassBtn.textContent = '+ ADD CLASS';
     addClassBtn.addEventListener('click', () => {
       dayData.classes.push({ name: "New Subject", time: "9:00am - 10:00am", room: "Rm.000" });
+      saveData();
       render();
     });
     classesBox.appendChild(addClassBtn);
@@ -461,6 +494,7 @@ function render() {
       reverse: schedule.length % 2 === 1,
       classes: [{ name: "New Subject", time: "9:00am - 10:00am", room: "Rm.000" }]
     });
+    saveData();
     render();
   });
   addDayRow.appendChild(addDayBtn);
@@ -473,6 +507,8 @@ function render() {
 }
 
 render();
+
+titleLabel.addEventListener('input', saveData);
 
 const appWindow = document.getElementById('app-window');
 const closeBtn = document.getElementById('close-btn');
