@@ -17,18 +17,25 @@
 
   * { box-sizing: border-box; }
 
-  body {
-    margin: 0;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    background: radial-gradient(circle at 30% 20%, #1a1a1a 0%, #0a0a0a 65%, #000000 100%);
-    font-family: "Courier New", monospace;
-    padding: 24px;
-  }
+ body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-family: "Courier New", monospace;
+  padding: 24px;
+  
+  /* Classic Retro OS Teal Background */
+  background-color: #008080;
+  background-image: 
+    radial-gradient(#005e5e 20%, transparent 20%), 
+    radial-gradient(#005e5e 20%, transparent 20%);
+  background-size: 6px 6px;
+  background-position: 0 0, 3px 3px;
+}
 
   .window {
     width: 100%;
